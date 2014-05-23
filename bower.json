@@ -1,0 +1,22 @@
+{
+  "name": "zipplayer",
+  "version": "0.1",
+  "authors": [
+    "Hector Martin <marcan@pixiv.com>"
+  ],
+  "description": "Player for animated ZIP PNG image bundles",
+  "main": "zip_player.js",
+  "license": "MIT",
+  "homepage": "http://pixiv.net",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": ">=1.7"
+  }
+}
