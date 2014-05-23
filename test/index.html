@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="jquery-2.1.1.js"></script>
+    <script src="../zip_player.js"></script>
+    <script src="meta.js"></script>
+    <style>
+    #progress {
+        background-color: blue;
+        height: 8px;
+        width: 0px;
+    }
+    #load {
+        background-color: green;
+        height: 8px;
+        width: 0px;
+    }
+    #curframe {
+        background-color: red;
+        height: 8px;
+        width: 0px;
+    }
+    </style>
+    <script>
+    $(function() {
+        var options = {
+            canvas: document.getElementById("canvas"), // <canvas>
+            source: "big_buck_bunny.zip",
+            metadata: meta, // TBD: json metadata format
+            chunkSize: 200000,
+            loop: true,
+            autoStart: true,
+            showLoadingIcon: true,
+            debug: false,
+        }
+        var p = new ZipImagePlayer(options);
+        var w = 320;
+        $(p).on("loadProgress", function(ev, progress) {
+            console.log("==== EVENT: loadProgress " + progress);
+            $("#progress").css("width", progress * w + "px");
+        });
+        $(p).on("frameLoaded", function(ev, frame) {
+            console.log("==== EVENT: frameLoaded " + frame);
+            $("#load").css("width", (frame + 1) * w / p.getFrameCount() + "px");
+        });
+        $(p).on("frame", function(ev, frame) {
+            console.log("==== EVENT: frame " + frame);
+            $("#curframe").css("width", frame * w / p.getFrameCount() + "px");
+        });
+        $(p).on("loadingStateChanged", function(ev, state) {
+            console.log("==== EVENT: loadingStateChanged " + state);
+            if (state == 0) {
+                $("#loading").html("Loading (blocked)...");
+            } else if (state == 1) {
+                $("#loading").html("Loading (background)...");
+            } else {
+                $("#loading").html("Loading complete.");
+            }
+        });
+        $(p).on("play", function(ev, frame) {
+            console.log("==== EVENT: play " + frame);
+        });
+        $(p).on("pause", function(ev, frame) {
+            console.log("==== EVENT: pause " + frame);
+        });
+        $("#play").on("click", function() { p.play(); });
+        $("#pause").on("click", function() { p.pause(); });
+        $("#rewind").on("click", function() { p.rewind(); });
+        $("#stop").on("click", function() { p.stop(); });
+    })
+    </script>
+</head>
+<body>
+    <button id="play">Play</button>
+    <button id="pause">Pause</button>
+    <button id="rewind">Rewind</button>
+    <button id="stop">Stop</button>
+    <div id="loading">Loading...</div>
+    <div id="progress"></div>
+    <div id="load"></div>
+    <div id="curframe"></div>
+    <canvas id="canvas" width=1024 height=768>
+    <br>
+    
+</body>
+</html>
