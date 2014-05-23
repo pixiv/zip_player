@@ -14,6 +14,8 @@ function ZipImagePlayer(options) {
     this._paused = false;
     if (this.op.autoStart) {
         this.play();
+    } else {
+        this._paused = true;
     }
 }
 
