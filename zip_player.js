@@ -82,6 +82,8 @@ function ZipImagePlayer(options) {
     if (!this._ArrayBuffer) {
         this._error("No ArrayBuffer support");
     }
+    this._isSafari = Object.prototype.toString.call(
+                         window.HTMLElement).indexOf('Constructor') > 0;
     this._loadingState = 0;
     this._dead = false;
     this._context = options.canvas.getContext("2d");
@@ -146,6 +148,12 @@ ZipImagePlayer.prototype = {
         xhr.open("GET", this.op.source);
         xhr.responseType = "arraybuffer";
         xhr.setRequestHeader("Range", "bytes=" + offset + "-" + (end - 1));
+        if (this._isSafari) {
+            // Range request caching is broken in Safari
+            // https://bugs.webkit.org/show_bug.cgi?id=82672
+            xhr.setRequestHeader("Cache-control", "no-cache");
+            xhr.setRequestHeader("If-None-Match", "" + toString(Math.random()));
+        }
         /*this._debugLog("Load: " + offset + " " + length);*/
         xhr.send();
     },
