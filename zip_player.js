@@ -152,7 +152,7 @@ ZipImagePlayer.prototype = {
             // Range request caching is broken in Safari
             // https://bugs.webkit.org/show_bug.cgi?id=82672
             xhr.setRequestHeader("Cache-control", "no-cache");
-            xhr.setRequestHeader("If-None-Match", "" + toString(Math.random()));
+            xhr.setRequestHeader("If-None-Match", toString(Math.random()));
         }
         /*this._debugLog("Load: " + offset + " " + length);*/
         xhr.send();
@@ -302,7 +302,14 @@ ZipImagePlayer.prototype = {
         var end = off + this._files[meta.file].len;
         var url;
         if (this._URL) {
-            var slice = this._buf.slice(off, end);
+            var slice;
+            if (!this._buf.slice) {
+                slice = new this._ArrayBuffer(this._files[meta.file].len);
+                var view = new this._Uint8Array(slice);
+                view.set(this._bytes.subarray(off, end));
+            } else {
+                slice = this._buf.slice(off, end);
+            }
             var blob;
             try {
                 blob = new this._Blob([slice], {type: "image/png"});
@@ -311,7 +318,7 @@ ZipImagePlayer.prototype = {
                 this._debugLog("Blob constructor failed. Trying BlobBuilder..."
                                + " (" + err.message + ")");
                 var bb = new this._BlobBuilder();
-                bb.append(this._buf.slice(off, end));
+                bb.append(slice);
                 blob = bb.getBlob();
             }
             /*_this._debugLog("Loading " + meta.file + " to frame " + frame);*/
