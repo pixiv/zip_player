@@ -379,6 +379,8 @@ ZipImagePlayer.prototype = {
             this._setLoadingState(1);
         }
         $(_this).triggerHandler("frame", this._frame);
+        this._context.clearRect(0, 0, this.op.canvas.width,
+                                this.op.canvas.height);
         this._context.drawImage(image, 0, 0);
         if (!this._paused) {
             this._timer = setTimeout(function() {
