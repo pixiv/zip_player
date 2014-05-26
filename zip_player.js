@@ -88,7 +88,6 @@ function ZipImagePlayer(options) {
     this._dead = false;
     this._context = options.canvas.getContext("2d");
     this._files = {};
-    this._startLoad();
     this._frameCount = this.op.metadata.frames.length;
     this._debugLog("Frame count: " + this._frameCount);
     this._frame = 0;
@@ -96,6 +95,7 @@ function ZipImagePlayer(options) {
     this._frameImages = [];
     this._paused = false;
     this._loadTimer = null;
+    this._startLoad();
     if (this.op.autoStart) {
         this.play();
     } else {
@@ -159,6 +159,11 @@ ZipImagePlayer.prototype = {
     },
     _startLoad: function() {
         var _this = this;
+        if (!this.op.source) {
+            // Unpacked mode (individiual frame URLs) - just load the frames.
+            this._loadNextFrame();
+            return;
+        }
         $.ajax({
             url: this.op.source,
             type: "HEAD",
@@ -288,12 +293,17 @@ ZipImagePlayer.prototype = {
         return this._pHead >= (this._fileDataStart(info.off) + info.len);
     },
     _loadNextFrame: function() {
-        var _this = this;
         var frame = this._loadFrame;
         if (frame >= this._frameCount) {
             return;
         }
         var meta = this.op.metadata.frames[frame];
+        if (!this.op.source) {
+            // Unpacked mode (individiual frame URLs)
+            this._loadFrame += 1;
+            this._loadImage(frame, meta.file, false);
+            return;
+        }
         if (!this._isFileAvailable(meta.file)) {
             return;
         }
@@ -323,14 +333,20 @@ ZipImagePlayer.prototype = {
             }
             /*_this._debugLog("Loading " + meta.file + " to frame " + frame);*/
             url = this._URL.createObjectURL(blob);
+            this._loadImage(frame, url, true);
         } else {
             url = "data:image/png;base64," + base64ArrayBuffer(this._buf, off,
                                                                end - off);
+            this._loadImage(frame, url, false);
         }
+    },
+    _loadImage: function(frame, url, isBlob) {
+        var _this = this;
         var image = new Image();
+        var meta = this.op.metadata.frames[frame];
         image.addEventListener('load', function() {
             _this._debugLog("Loaded " + meta.file + " to frame " + frame);
-            if (_this._URL) {
+            if (isBlob) {
                 _this._URL.revokeObjectURL(url);
             }
             if (_this._dead) {
@@ -452,5 +468,8 @@ ZipImagePlayer.prototype = {
     },
     getFrameCount: function() {
         return this._frameCount;
+    },
+    hasError: function() {
+        return this._failed;
     }
 }
