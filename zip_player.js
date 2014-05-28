@@ -240,6 +240,11 @@ ZipImagePlayer.prototype = {
         }
         // Two outstanding fetches at any given time.
         // Note: the implementation does not support more than two.
+        if (this._pHead >= this._pTail) {
+            this._pHead = this._len;
+            $(this).triggerHandler("loadProgress", [this._pHead / this._len]);
+            this._loadNextFrame();
+        }
         this._loadNextChunk();
         this._loadNextChunk();
     },
@@ -293,6 +298,9 @@ ZipImagePlayer.prototype = {
         return this._pHead >= (this._fileDataStart(info.off) + info.len);
     },
     _loadNextFrame: function() {
+        if (this._dead) {
+            return;
+        }
         var frame = this._loadFrame;
         if (frame >= this._frameCount) {
             return;
@@ -382,6 +390,9 @@ ZipImagePlayer.prototype = {
         }
     },
     _displayFrame: function() {
+        if (this._dead) {
+            return;
+        }
         var _this = this;
         var meta = this.op.metadata.frames[this._frame];
         this._debugLog("Displaying frame: " + this._frame + " " + meta.file);
@@ -394,10 +405,10 @@ ZipImagePlayer.prototype = {
         if (this._loadingState != 2) {
             this._setLoadingState(1);
         }
-        $(_this).triggerHandler("frame", this._frame);
         this._context.clearRect(0, 0, this.op.canvas.width,
                                 this.op.canvas.height);
         this._context.drawImage(image, 0, 0);
+        $(_this).triggerHandler("frame", this._frame);
         if (!this._paused) {
             this._timer = setTimeout(function() {
                 this._timer = null;
@@ -411,6 +422,7 @@ ZipImagePlayer.prototype = {
                 this._frame = 0;
             } else {
                 this.pause();
+                return;
             }
         } else {
             this._frame += 1;
@@ -454,6 +466,9 @@ ZipImagePlayer.prototype = {
         this._dead = true;
         if (this._timer) {
             clearTimeout(this._timer);
+        }
+        if (this._loadTimer) {
+            clearTimeout(this._loadTimer);
         }
         this._frameImages = null;
         this._buf = null;
