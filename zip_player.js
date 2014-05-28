@@ -114,7 +114,7 @@ ZipImagePlayer.prototype = {
     },
     _error: function(msg) {
         this._failed = true;
-        throw "ZipImagePlayer error: " + msg;
+        throw Error("ZipImagePlayer error: " + msg);
     },
     _debugLog: function(msg) {
         if (this.op.debug) {
