@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="mocha.css" />
+    <script src="jquery-2.1.1.js"></script>
+    <script src="../zip_player.js"></script>
+    <script src="meta.js"></script>
+    <script src="mocha.js"></script>
+    <script src="assert.js"></script>
+    <script src="crc32.js"></script>
+    <script>
+        var test_meta = {
+            frames: [
+                {file: "hon/000000.png", delay: 1, crc: 0x0d62a8f4},
+                {file: "hon/000001.png", delay: 1, crc: 0x25ace572},
+                {file: "hon/000002.png", delay: 1, crc: 0xab1015a2},
+                {file: "hon/000003.png", delay: 1, crc: 0x4abdb50c},
+                {file: "hon/000004.png", delay: 1, crc: 0x5f4531dd},
+                {file: "hon/000005.png", delay: 1, crc: 0x03bd2481},
+                {file: "hon/000006.png", delay: 1, crc: 0x26928516},
+                {file: "hon/000007.png", delay: 1, crc: 0x7b6613dd},
+                {file: "hon/000008.png", delay: 1, crc: 0x46166e18},
+                {file: "hon/000009.png", delay: 1, crc: 0x69d62e31},
+                {file: "hon/000010.png", delay: 1, crc: 0xd1592d49},
+                {file: "hon/000011.png", delay: 1, crc: 0x13636a00},
+                {file: "hon/000012.png", delay: 1, crc: 0x0431bb50},
+                {file: "hon/000013.png", delay: 1, crc: 0x0d62a8f4},
+            ],
+        };
+
+        mocha.setup("tdd");
+
+        function createPlayer(opts) {
+            var canvas = document.createElement('canvas');
+            canvas.width = 100;
+            canvas.height = 100;
+            var options = {
+                canvas: canvas,
+                source: "hon.zip",
+                metadata: test_meta,
+                chunkSize: 300000,
+                loop: false,
+                autoStart: false,
+                debug: false,
+            }
+            if (opts) {
+                for (var name in opts) {
+                    options[name] = opts[name];
+                }
+            }
+            var p = new ZipImagePlayer(options);
+            p.canvas = canvas;
+            return p;
+        }
+
+        suite("ZipImagePlayer", function() {
+            this.timeout(5000);
+
+            test("Loading should complete", function(done) {
+                var p = createPlayer();
+                $(p).on("loadProgress", function(ev, progress) {
+                    if (progress == 1.0) {
+                        p.stop();
+                        done();
+                    }
+                });
+            });
+
+            test("and load all frames in order", function(done) {
+                var p = createPlayer();
+                var count = 0;
+                $(p).on("frameLoaded", function(ev, frame) {
+                    assert.equal(frame, count, "Frames loaded out of order");
+                    count += 1;
+                    if (count == p.getFrameCount()) {
+                        p.stop();
+                        done();
+                    }
+                });
+            });
+
+            test("and end at loading state 2", function(done) {
+                var p = createPlayer();
+                $(p).on("loadingStateChanged", function(ev, state) {
+                    if (state == 2) {
+                        p.stop();
+                        done();
+                    }
+                });
+            });
+
+
+            test("All frames should render correctly", function(done) {
+                var p = createPlayer({autoStart: true});
+                var count = 0;
+                $(p).on("frame", function(ev, frame) {
+                    assert.equal(frame, count, "Frames played out of order (" + frame + " != " + count + ")");
+                    var ctx = p.canvas.getContext("2d");
+                    var data = ctx.getImageData(0, 0, p.canvas.width,
+                                                p.canvas.height);
+                    var crc = crc32.unsigned(data.data, 0);
+                    assert.equal(crc, test_meta.frames[count].crc, "CRC mismatch on frame " + frame);
+                    count += 1;
+                    if (count == p.getFrameCount()) {
+                        p.stop();
+                        done();
+                    }
+                });
+            });
+
+            test("Looping should work", function(done) {
+                var p = createPlayer({autoStart: true, loop: true});
+                var count = 0;
+                $(p).on("frame", function(ev, frame) {
+                    if (count == p.getFrameCount()) {
+                        assert.equal(frame, 0, "Didn't loop correctly (frame " + frame + ")");
+                        p.stop();
+                        done();
+                    }
+                    count += 1;
+                });
+            });
+
+            test("Unpacked mode should also work", function(done) {
+                var p = createPlayer({source: null});
+                var count = 0;
+                $(p).on("frameLoaded", function(ev, frame) {
+                    assert.equal(frame, count, "Frames loaded out of order");
+                    count += 1;
+                    if (count == p.getFrameCount()) {
+                        p.stop();
+                        done();
+                    }
+                });
+            });
+
+        });
+    </script>
+</head>
+<body>
+    <div id="mocha"></div>
+    <script>
+      if (window.mochaPhantomJS) { mochaPhantomJS.run(); }
+      else { mocha.run(); }
+    </script>
+</body>
+</html>
