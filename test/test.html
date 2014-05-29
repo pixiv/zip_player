@@ -169,6 +169,35 @@
                 });
             });
 
+            test("data: URL mode should work", function(done) {
+                var URL = window.URL;
+                window.URL = window.webkitURL = null;
+                var p = createPlayer();
+                window.URL = URL;
+
+                var count = 0;
+                $(p).on("frameLoaded", function(ev, frame) {
+                    assert.equal(frame, count, "Frames loaded out of order");
+                    count += 1;
+                    if (count == p.getFrameCount()) {
+                        p.stop();
+                        done();
+                    }
+                });
+            });
+
+            test("Lack of browser features should throw an error", function() {
+                var Blob = window.Blob;
+                try {
+                    window.Blob = window.WebKitBlob = null;
+                    assert.throws(function() {
+                        var p = createPlayer();
+                    }, /No Blob support/);
+                } finally {
+                    window.Blob = Blob;
+                }
+            });
+
         });
     </script>
 </head>
