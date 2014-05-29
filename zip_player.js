@@ -290,7 +290,7 @@ ZipImagePlayer.prototype = {
     _isFileAvailable: function(name) {
         var info = this._files[name];
         if (!info) {
-            return false;
+            this._error("File " + name + " not found in ZIP");
         }
         if (this._pHead < (info.off + 30)) {
             return false;

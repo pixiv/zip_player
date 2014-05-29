@@ -59,6 +59,7 @@
 
             test("Loading should complete", function(done) {
                 var p = createPlayer();
+                assert.equal(p.getFrameCount(), test_meta.frames.length);
                 $(p).on("loadProgress", function(ev, progress) {
                     if (progress == 1.0) {
                         p.stop();
@@ -84,6 +85,8 @@
                 var p = createPlayer();
                 $(p).on("loadingStateChanged", function(ev, state) {
                     if (state == 2) {
+                        assert.equal(p.getLoadedFrames(), p.getFrameCount(),
+                                     "getLoadedFrames != getFrameCount");
                         p.stop();
                         done();
                     }
@@ -95,12 +98,13 @@
                 var p = createPlayer({autoStart: true});
                 var count = 0;
                 $(p).on("frame", function(ev, frame) {
-                    assert.equal(frame, count, "Frames played out of order (" + frame + " != " + count + ")");
+                    assert.equal(frame, count, "Frames played out of order");
                     var ctx = p.canvas.getContext("2d");
                     var data = ctx.getImageData(0, 0, p.canvas.width,
                                                 p.canvas.height);
                     var crc = crc32.unsigned(data.data, 0);
-                    assert.equal(crc, test_meta.frames[count].crc, "CRC mismatch on frame " + frame);
+                    assert.equal(crc, test_meta.frames[count].crc,
+                                 "CRC mismatch on frame " + frame);
                     count += 1;
                     if (count == p.getFrameCount()) {
                         p.stop();
@@ -109,12 +113,12 @@
                 });
             });
 
-            test("Looping should work", function(done) {
+            test("Looping and autostart should work", function(done) {
                 var p = createPlayer({autoStart: true, loop: true});
                 var count = 0;
                 $(p).on("frame", function(ev, frame) {
                     if (count == p.getFrameCount()) {
-                        assert.equal(frame, 0, "Didn't loop correctly (frame " + frame + ")");
+                        assert.equal(frame, 0, "Didn't loop correctly");
                         p.stop();
                         done();
                     }
@@ -122,7 +126,37 @@
                 });
             });
 
-            test("Unpacked mode should also work", function(done) {
+            test("Play, pause, stop should work", function(done) {
+                var p = createPlayer({autoStart: false, loop: false});
+                var timeout = null;
+                var last_frame = null;
+                p.play();
+                $(p).on("frame", function(ev, frame) {
+                    assert.equal(p.getCurrentFrame(), frame);
+                    if (timeout) {
+                        clearTimeout(timeout);
+                        assert.fail(timeout, null, "Pause or stop failed",
+                                    "===");
+                    }
+                    if (frame == 3 && last_frame != 3) {
+                        p.pause();
+                        timeout = setTimeout(function() {
+                            timeout = null;
+                            p.play();
+                        }, 200);
+                    }
+                    if (frame == 6) {
+                        p.stop();
+                        timeout = setTimeout(function() {
+                            timeout = null;
+                            done();
+                        }, 200);
+                    }
+                    last_frame = frame;
+                });
+            });
+
+            test("Unpacked mode should work", function(done) {
                 var p = createPlayer({source: null});
                 var count = 0;
                 $(p).on("frameLoaded", function(ev, frame) {
