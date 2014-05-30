@@ -11,6 +11,7 @@
     <script src="crc32.js"></script>
     <script>
         var test_meta = {
+            mime_type: "image/png",
             frames: [
                 {file: "hon/000000.png", delay: 1, crc: 0x0d62a8f4},
                 {file: "hon/000001.png", delay: 1, crc: 0x25ace572},
@@ -28,6 +29,26 @@
                 {file: "hon/000013.png", delay: 1, crc: 0x0d62a8f4},
             ],
         };
+
+        var jpeg_meta = {
+            mime_type: "image/jpeg",
+            frames: [
+                {file: "hon/000000.jpg", delay: 1},
+                {file: "hon/000001.jpg", delay: 1},
+                {file: "hon/000002.jpg", delay: 1},
+                {file: "hon/000003.jpg", delay: 1},
+                {file: "hon/000004.jpg", delay: 1},
+                {file: "hon/000005.jpg", delay: 1},
+                {file: "hon/000006.jpg", delay: 1},
+                {file: "hon/000007.jpg", delay: 1},
+                {file: "hon/000008.jpg", delay: 1},
+                {file: "hon/000009.jpg", delay: 1},
+                {file: "hon/000010.jpg", delay: 1},
+                {file: "hon/000011.jpg", delay: 1},
+                {file: "hon/000012.jpg", delay: 1},
+                {file: "hon/000013.jpg", delay: 1},
+            ],
+        }
 
         mocha.setup("tdd");
 
@@ -196,6 +217,20 @@
                 } finally {
                     window.Blob = Blob;
                 }
+            });
+
+            test("JPEG images should work", function(done) {
+                var p = createPlayer({
+                    source: "hon_jpeg.zip",
+                    metadata: jpeg_meta
+                });
+                $(p).on("frame", function(ev, frame) {
+                    /* Note: we can't test the CRC of the decoded image because
+                    JPEG decoding is NOT bit-perfect! Different implementations
+                    produce slightly different output. */
+                    p.stop();
+                    done();
+                });
             });
 
         });

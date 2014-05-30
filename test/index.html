@@ -5,6 +5,7 @@
     <script src="jquery-2.1.1.js"></script>
     <script src="../zip_player.js"></script>
     <script src="meta.js"></script>
+    <script src="jpeg-meta.js"></script>
     <script src="hon-meta.js"></script>
     <style>
     #progress {
@@ -71,6 +72,18 @@
 
         var options = {
             // no source: unzipped animation
+            canvas: document.getElementById("canvasj"), // <canvas>
+            source: "big_buck_bunny_jpg.zip",
+            metadata: jpeg_meta, // TBD: json metadata format
+            chunkSize: 300000,
+            loop: true,
+            autoStart: true,
+            debug: true,
+        }
+        var pj = new ZipImagePlayer(options);
+
+        var options = {
+            // no source: unzipped animation
             canvas: document.getElementById("canvas2"), // <canvas>
             metadata: hon_meta, // TBD: json metadata format
             loop: true,
@@ -100,7 +113,12 @@
     <div id="load"></div>
     <div id="curframe"></div>
     <canvas id="canvas" width=320 height=180></canvas>
+    (PNG)
+    <br>
+    <canvas id="canvasj" width=480 height=270></canvas>
+    (JPEG)
     <br>
     <canvas id="canvas2" width=100 height=100></canvas>
+    (PNG unpacked)
 </body>
 </html>

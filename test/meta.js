@@ -1,4 +1,5 @@
 var meta = {
+    mime_type: "image/png",
     frames: [
         {file: "0001.png", delay: 40},
         {file: "0002.png", delay: 40},

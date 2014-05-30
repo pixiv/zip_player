@@ -319,6 +319,7 @@ ZipImagePlayer.prototype = {
         var off = this._fileDataStart(this._files[meta.file].off);
         var end = off + this._files[meta.file].len;
         var url;
+        var mime_type = this.op.metadata.mime_type || "image/png";
         if (this._URL) {
             var slice;
             if (!this._buf.slice) {
@@ -330,7 +331,7 @@ ZipImagePlayer.prototype = {
             }
             var blob;
             try {
-                blob = new this._Blob([slice], {type: "image/png"});
+                blob = new this._Blob([slice], {type: mime_type});
             }
             catch (err) {
                 this._debugLog("Blob constructor failed. Trying BlobBuilder..."
@@ -343,8 +344,8 @@ ZipImagePlayer.prototype = {
             url = this._URL.createObjectURL(blob);
             this._loadImage(frame, url, true);
         } else {
-            url = "data:image/png;base64," + base64ArrayBuffer(this._buf, off,
-                                                               end - off);
+            url = ("data:" + mime_type + ";base64,"
+                   + base64ArrayBuffer(this._buf, off, end - off));
             this._loadImage(frame, url, false);
         }
     },

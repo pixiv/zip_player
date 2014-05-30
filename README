@@ -1,8 +1,10 @@
 == Introduction ==
 
 zip_player is a JavaScript library to load and play back animated images
-packaged as an uncompressed ZIP archive containing individual PNG frames.
-Frames are drawn onto a Canvas element.
+packaged as an uncompressed ZIP archive containing individual frames.
+Frames are drawn onto a Canvas element and may be any image MIME type
+supported by the browser (e.g. JPEG, PNG, GIF - though animated GIFs are not
+supported for obvious reasons).
 
 It also supports an unpacked mode where the images are directly referenced as
 individual URLs (e.g. data: URLs for client-side preview purposes).
@@ -49,6 +51,6 @@ See the LICENSE file for full license text.
 Note: The license does not apply to third-party JavaScript and test images in 
 the test/ directory. Those belong to their respective owners:
   - hon.zip and hon/ are public domain
-  - big_buck_bunny.zip is licensed under CC-BY 3.0:
+  - big_buck_bunny[_jpg].zip is licensed under CC-BY 3.0:
      (c) copyright 2008, Blender Foundation / www.bigbuckbunny.org
 
