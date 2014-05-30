@@ -1,0 +1,54 @@
+== Introduction ==
+
+zip_player is a JavaScript library to load and play back animated images
+packaged as an uncompressed ZIP archive containing individual PNG frames.
+Frames are drawn onto a Canvas element.
+
+It also supports an unpacked mode where the images are directly referenced as
+individual URLs (e.g. data: URLs for client-side preview purposes).
+
+== Dependencies ==
+
+jQuery (zip_player uses jQuery for event dispatch).
+
+== Usage ==
+
+Open test/index.html for an example. Note that you need to serve it from a web
+server with Range support for zip mode to work (unpacked mode does not require
+Range support).
+
+== Browser compatibility ==
+
+- Any recent Chrome or Firefox
+- Safari 7+
+- IE 10+
+- iOS 5+ (6+ recommended, 5 is slow due to lack of Blob URL support)
+- Android browser 4.0+
+
+== Testing ==
+
+To run the tests manually, open test/test.html under a web browser. You need to
+serve it from a web server with Range support. The test suite uses mocha.js.
+
+To run the automated test suite, you need Node, PhantomJS, and the following
+dependencies:
+
+$ npm install -g connect mocha-phantomjs
+
+Run test/test.sh to run the automated test suite. It will automatically start
+a test web server, run the tests, and shut down the server. You may need to edit
+test/test.sh for your particular system's installation paths.
+
+== License ==
+
+zip_player is Copyright (c) 2014 Pixiv Inc.
+
+zip_player is licensed under the MIT License.
+See the LICENSE file for full license text.
+
+Note: The license does not apply to third-party JavaScript and test images in 
+the test/ directory. Those belong to their respective owners:
+  - hon.zip and hon/ are public domain
+  - big_buck_bunny.zip is licensed under CC-BY 3.0:
+     (c) copyright 2008, Blender Foundation / www.bigbuckbunny.org
+
