@@ -152,7 +152,7 @@ ZipImagePlayer.prototype = {
             // Range request caching is broken in Safari
             // https://bugs.webkit.org/show_bug.cgi?id=82672
             xhr.setRequestHeader("Cache-control", "no-cache");
-            xhr.setRequestHeader("If-None-Match", toString(Math.random()));
+            xhr.setRequestHeader("If-None-Match", Math.random().toString());
         }
         /*this._debugLog("Load: " + offset + " " + length);*/
         xhr.send();
