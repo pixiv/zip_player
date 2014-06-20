@@ -409,10 +409,10 @@ ZipImagePlayer.prototype = {
         this._context.clearRect(0, 0, this.op.canvas.width,
                                 this.op.canvas.height);
         this._context.drawImage(image, 0, 0);
-        $(_this).triggerHandler("frame", this._frame);
+        $(this).triggerHandler("frame", this._frame);
         if (!this._paused) {
             this._timer = setTimeout(function() {
-                this._timer = null;
+                _this._timer = null;
                 _this._nextFrame.apply(_this);
             }, meta.delay);
         }
