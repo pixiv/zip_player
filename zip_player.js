@@ -205,7 +205,7 @@ ZipImagePlayer.prototype = {
         if (cd_off < this._pTail) {
             this._load(cd_off, this._pTail - cd_off, function() {
                 this._pTail = cd_off;
-                this._readCentralDirectory(cd_off, cd_size);
+                this._readCentralDirectory(cd_off, cd_size, cd_count);
             });
         } else {
             this._readCentralDirectory(cd_off, cd_size, cd_count);
