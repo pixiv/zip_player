@@ -406,6 +406,14 @@ ZipImagePlayer.prototype = {
         if (this._loadingState != 2) {
             this._setLoadingState(1);
         }
+        if (this.op.autosize) {
+            if (this._context.canvas.width != image.width || this._context.canvas.height != image.height) {
+                // make the canvas autosize itself according to the images drawn on it
+                // should set it once, since we don't have variable sized frames
+                this._context.canvas.width = image.width;
+                this._context.canvas.height = image.height;
+            }
+        };
         this._context.clearRect(0, 0, this.op.canvas.width,
                                 this.op.canvas.height);
         this._context.drawImage(image, 0, 0);
