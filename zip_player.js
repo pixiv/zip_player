@@ -122,7 +122,6 @@ ZipImagePlayer.prototype = {
         }
     },
     _load: function(offset, length, callback) {
-        var end = offset + length;
         var _this = this;
         // Unfortunately JQuery doesn't support ArrayBuffer XHR
         var xhr = new XMLHttpRequest();
@@ -132,27 +131,40 @@ ZipImagePlayer.prototype = {
             }
             _this._debugLog("Load: " + offset + " " + length + " status=" +
                             xhr.status);
-            if (xhr.status != 206) {
-                _this._error("Unexpected HTTP status " + xhr.status);
+            if (xhr.status == 200) {
+                _this._debugLog("Range disabled or unsupported, complete load");
+                offset = 0;
+                length = xhr.response.byteLength;
+                _this._len = length;
+                _this._buf = xhr.response;
+                _this._bytes = new _this._Uint8Array(_this._buf);
+            } else {
+                if (xhr.status != 206) {
+                    _this._error("Unexpected HTTP status " + xhr.status);
+                }
+                if (xhr.response.byteLength != length) {
+                    _this._error("Unexpected length " +
+                                 xhr.response.byteLength +
+                                 " (expected " + length + ")");
+                }
+                _this._bytes.set(new _this._Uint8Array(xhr.response), offset);
             }
-            if (xhr.response.byteLength != length) {
-                _this._error("Unexpected length " + xhr.response.byteLength +
-                             " (expected " + length + ")");
-            }
-            _this._bytes.set(new _this._Uint8Array(xhr.response), offset);
             if (callback) {
-                callback.apply(_this);
+                callback.apply(_this, [offset, length]);
             }
         }, false);
         xhr.addEventListener("error", this._mkerr("Fetch failed"), false);
         xhr.open("GET", this.op.source);
         xhr.responseType = "arraybuffer";
-        xhr.setRequestHeader("Range", "bytes=" + offset + "-" + (end - 1));
-        if (this._isSafari) {
-            // Range request caching is broken in Safari
-            // https://bugs.webkit.org/show_bug.cgi?id=82672
-            xhr.setRequestHeader("Cache-control", "no-cache");
-            xhr.setRequestHeader("If-None-Match", Math.random().toString());
+        if (offset != null && length != null) {
+            var end = offset + length;
+            xhr.setRequestHeader("Range", "bytes=" + offset + "-" + (end - 1));
+            if (this._isSafari) {
+                // Range request caching is broken in Safari
+                // https://bugs.webkit.org/show_bug.cgi?id=82672
+                xhr.setRequestHeader("Cache-control", "no-cache");
+                xhr.setRequestHeader("If-None-Match", Math.random().toString());
+            }
         }
         /*this._debugLog("Load: " + offset + " " + length);*/
         xhr.send();
@@ -171,9 +183,19 @@ ZipImagePlayer.prototype = {
             if (_this._dead) {
                 return;
             }
+            _this._pHead = 0;
+            _this._pNextHead = 0;
+            _this._pFetch = 0;
             var len = parseInt(xhr.getResponseHeader("Content-Length"));
             if (!len) {
-                _this._error("Invalid file length");
+                _this._debugLog("HEAD request failed: invalid file length.");
+                _this._debugLog("Falling back to full file mode.");
+                _this._load(null, null, function(off, len) {
+                    _this._pTail = 0;
+                    _this._pHead = len;
+                    _this._findCentralDirectory();
+                });
+                return;
             }
             _this._debugLog("Len: " + len);
             _this._len = len;
@@ -183,11 +205,8 @@ ZipImagePlayer.prototype = {
             if (off < 0) {
                 off = 0;
             }
-            _this._pHead = 0;
-            _this._pNextHead = 0;
             _this._pTail = len;
-            _this._pFetch = 0;
-            _this._load(off, len - off, function() {
+            _this._load(off, len - off, function(off, len) {
                 _this._pTail = off;
                 _this._findCentralDirectory();
             });
@@ -244,9 +263,10 @@ ZipImagePlayer.prototype = {
             this._pHead = this._len;
             $(this).triggerHandler("loadProgress", [this._pHead / this._len]);
             this._loadNextFrame();
+        } else {
+            this._loadNextChunk();
+            this._loadNextChunk();
         }
-        this._loadNextChunk();
-        this._loadNextChunk();
     },
     _loadNextChunk: function() {
         if (this._pFetch >= this._pTail) {

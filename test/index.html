@@ -33,7 +33,7 @@
             chunkSize: 300000,
             loop: true,
             autoStart: true,
-            debug: false,
+            debug: true,
         }
         var p = new ZipImagePlayer(options);
         var w = 320;
@@ -71,14 +71,13 @@
         $("#stop").on("click", function() { p.stop(); });
 
         var options = {
-            // no source: unzipped animation
             canvas: document.getElementById("canvasj"), // <canvas>
             source: "big_buck_bunny_jpg.zip",
             metadata: jpeg_meta, // TBD: json metadata format
             chunkSize: 300000,
             loop: true,
             autoStart: true,
-            debug: true,
+            debug: false,
         }
         var pj = new ZipImagePlayer(options);
 
@@ -88,7 +87,7 @@
             metadata: hon_meta, // TBD: json metadata format
             loop: true,
             autoStart: true,
-            debug: true,
+            debug: false,
         }
         var p2 = new ZipImagePlayer(options);
         $(p2).on("loadProgress", function(ev, progress) {
