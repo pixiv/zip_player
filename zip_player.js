@@ -166,7 +166,7 @@ ZipImagePlayer.prototype = {
         }
         $.ajax({
             url: this.op.source,
-            type: "HEAD",
+            type: "HEAD"
         }).done(function(data, status, xhr) {
             if (_this._dead) {
                 return;
